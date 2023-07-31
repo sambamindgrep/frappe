@@ -9,7 +9,7 @@
  "hide_custom": 0,
  "icon": "integration",
  "idx": 0,
- "is_hidden": 0,
+ "is_hidden": 1,
  "label": "Integrations",
  "links": [
   {
@@ -199,7 +199,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-05-24 14:58:55.910408",
+ "modified": "2023-07-26 21:08:28.200526",
  "modified_by": "Administrator",
  "module": "Integrations",
  "name": "Integrations",

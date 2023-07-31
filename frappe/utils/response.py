@@ -100,7 +100,7 @@ def as_raw():
 
 
 def as_json():
-	make_logs()
+	#make_logs()
 	response = Response()
 	if frappe.local.response.http_status_code:
 		response.status_code = frappe.local.response["http_status_code"]

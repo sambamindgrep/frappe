@@ -10,6 +10,10 @@ from frappe import _
 from frappe.model import log_types
 from frappe.query_builder import DocType
 from frappe.utils import cint, cstr, now_datetime
+from ulid import ULID
+
+def generate_ulid():
+	return str(ULID()).lower()
 
 if TYPE_CHECKING:
 	from frappe.model.document import Document
@@ -225,7 +229,7 @@ def set_name_from_naming_options(autoname, doc):
 		_prompt_autoname(autoname, doc)
 	elif _autoname.startswith("format:"):
 		doc.name = _format_autoname(autoname, doc)
-	elif "#" in autoname:
+	else:
 		doc.name = make_autoname(autoname, doc=doc)
 
 
@@ -282,8 +286,11 @@ def make_autoname(key="", doctype="", doc=""):
 	              * DE./.YY./.MM./.##### will create a series like
 	                DE/09/01/00001 where 09 is the year, 01 is the month and 00001 is the series
 	"""
+	print('key', key)	
 	if key == "hash":
 		return frappe.generate_hash(length=10)
+	elif key == "ulid":
+		return generate_ulid()
 
 	series = NamingSeries(key)
 	return series.generate_next_name(doc)

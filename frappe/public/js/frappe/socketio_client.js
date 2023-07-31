@@ -117,7 +117,7 @@ class RealTimeClient {
 			if (parts.length > 2) {
 				host = parts[0] + ":" + parts[1];
 			}
-			host = host + ":" + port;
+			//host = host + ":" + port;
 		}
 		return host + `/${frappe.boot.sitename}`;
 	}

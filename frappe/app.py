@@ -80,6 +80,7 @@ def application(request: Request):
 
 		elif request.path.startswith("/api/"):
 			response = frappe.api.handle()
+			print("before log_request", response)
 
 		elif request.path.startswith("/backups"):
 			response = frappe.utils.response.download_backup(request.path)

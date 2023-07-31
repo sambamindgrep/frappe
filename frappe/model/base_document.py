@@ -4,7 +4,7 @@ import datetime
 import json
 
 import frappe
-from frappe import _, _dict
+from frappe import _, _dict, get_module_path
 from frappe.model import (
 	child_table_fields,
 	datetime_fields,
@@ -51,7 +51,6 @@ def get_controller(doctype):
 		site_controllers[doctype] = import_controller(doctype)
 
 	return site_controllers[doctype]
-
 
 def import_controller(doctype):
 	from frappe.model.document import Document
@@ -438,7 +437,7 @@ class BaseDocument:
 			]
 
 		if no_default_fields:
-			for key in default_fields:
+			for key in default_fields + ("parent", "parentfield", "parenttype"):
 				if key in doc:
 					del doc[key]
 
@@ -447,16 +446,17 @@ class BaseDocument:
 				if key in doc:
 					del doc[key]
 
-		for key in (
-			"_user_tags",
-			"__islocal",
-			"__onload",
-			"_liked_by",
-			"__run_link_triggers",
-			"__unsaved",
-		):
-			if value := getattr(self, key, None):
-				doc[key] = value
+		if not no_default_fields:
+			for key in (
+				"_user_tags",
+				"__islocal",
+				"__onload",
+				"_liked_by",
+				"__run_link_triggers",
+				"__unsaved",
+			):
+				if value := getattr(self, key, None):
+					doc[key] = value
 
 		return doc
 
