@@ -80,7 +80,6 @@ def application(request: Request):
 
 		elif request.path.startswith("/api/"):
 			response = frappe.api.handle()
-			print("before log_request", response)
 
 		elif request.path.startswith("/backups"):
 			response = frappe.utils.response.download_backup(request.path)
@@ -151,7 +150,8 @@ def init_request(request):
 		else:
 			raise frappe.SessionStopped("Session Stopped")
 	else:
-		frappe.connect(set_admin_as_user=False)
+		if not getattr(frappe.local, 'db', None):
+			frappe.connect(set_admin_as_user=False)
 
 	request.max_content_length = cint(frappe.local.conf.get("max_file_size")) or 10 * 1024 * 1024
 

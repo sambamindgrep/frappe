@@ -264,7 +264,6 @@ def get_user_permissions(user):
 def has_user_permission(doc, user=None):
 	"""Returns True if User is allowed to view considering User Permissions"""
 	from frappe.core.doctype.user_permission.user_permission import get_user_permissions
-
 	user_permissions = get_user_permissions(user)
 
 	if not user_permissions:
@@ -356,9 +355,19 @@ def has_user_permission(doc, user=None):
 	if not check_user_permission_on_link_fields(doc):
 		return False
 
+	meta = frappe.get_meta(doctype)
+	table_multi_select = {}
+
 	for d in doc.get_all_children():
-		if not check_user_permission_on_link_fields(d):
+		if meta.get_field(d.parentfield).fieldtype == "Table MultiSelect":
+			if table_multi_select.get(d.doctype):
+				continue
+			table_multi_select[d.doctype] = check_user_permission_on_link_fields(d)
+		elif not check_user_permission_on_link_fields(d):
 			return False
+
+	if not all(table_multi_select.values()):
+		return False
 
 	return True
 

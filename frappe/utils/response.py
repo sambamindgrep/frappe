@@ -40,7 +40,7 @@ def report_error(status_code):
 		traceback = frappe.utils.get_traceback()
 		if traceback:
 			frappe.errprint(traceback)
-			frappe.local.response.exception = traceback.splitlines()[-1]
+			frappe.local.response.exception = traceback.splitlines()[-1].partition(":")[2]
 
 	response = build_response("json")
 	response.status_code = status_code

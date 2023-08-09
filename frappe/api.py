@@ -52,7 +52,7 @@ def handle():
 
     if len(parts) > 3:
         name = parts[3]
-  
+
     if len(parts) > 4:
         frappe.local.form_dict.name = name
         module = get_doctype_module(doctype)
@@ -147,21 +147,21 @@ class _RESTAPIHandler:
         if 'id' in fields: fields.remove("id")
         fields.append("name")
         return fields
-          
+
     def get_doc(self):
-        
+
         doc = frappe.get_doc(self.doctype, self.name)
         if not doc.has_permission("read"):
             raise frappe.PermissionError
         doc.apply_fieldlevel_read_permissions()
-        
+
         fields = self._fields()
-   
+
         d = doc.as_dict(no_nulls=True, no_default_fields=True, convert_dates_to_str=True)
-        
+
         if fields:
             d = frappe._dict({field: d.get(field) for field in fields})
-        
+
         d.update({"id": doc.name})
 
         frappe.local.response.update({"data": d})
@@ -208,13 +208,23 @@ class _RESTAPIHandler:
             if param_val is not None:
                 frappe.local.form_dict[param] = sbool(param_val)
 
-        # evaluate frappe.get_list
+        try:
+            # evaluate frappe.get_list
+            if self.doctype == 'Customer':
+                filter = ["TSP List", 'tsp', '=', frappe.session.user.replace("@example.com", "")]
+                if 'filters' in frappe.local.form_dict:
+                    frappe.local.form_dict['filters'].append(filter)
+                else:
+                    frappe.local.form_dict['filters'] = [filter]
+        except Exception as e:
+            print(e)
+
         data = frappe.call(frappe.client.get_list, self.doctype, **frappe.local.form_dict)
         for d in data:
             if 'name' in d:
                 d['id'] = d['name']
                 del d['name']
-            
+
         # set frappe.get_list result to response
         frappe.local.response.update({"data": data})
 
@@ -230,7 +240,7 @@ class _RESTAPIHandler:
 
         if not frappe.local.response.get("http_status_code"):
             frappe.local.response["http_status_code"] = 201
-        
+
           # set response data
         frappe.local.response.update({"data": doc.as_dict(
             no_default_fields=True,
@@ -334,12 +344,20 @@ def validate_auth_via_api_keys(authorization_header):
 def validate_api_key_secret(api_key, api_secret, frappe_authorization_source=None):
     """frappe_authorization_source to provide api key and secret for a doctype apart from User"""
     doctype = frappe_authorization_source or "User"
-    doc = frappe.db.get_value(doctype=doctype, filters={"api_key": api_key}, fieldname=["name"])
+    cached = frappe.cache.hget("api_key", api_key)
     form_dict = frappe.local.form_dict
-    doc_secret = frappe.utils.password.get_decrypted_password(doctype, doc, fieldname="api_secret")
+
+    if cached:
+        doc = cached['user']
+        doc_secret = cached["api_secret"]
+    else:
+        doc = frappe.db.get_value(doctype=doctype, filters={"api_key": api_key}, fieldname=["name"])
+        doc_secret = frappe.utils.password.get_decrypted_password(doctype, doc, fieldname="api_secret")
+        frappe.cache.hset("api_key", api_key, {"user": doc, "api_secret": doc_secret})
+
     if api_secret == doc_secret:
         if doctype == "User":
-            user = frappe.db.get_value(doctype="User", filters={"api_key": api_key}, fieldname=["name"])
+            user = doc
         else:
             user = frappe.db.get_value(doctype, doc, "user")
         if frappe.local.login_manager.user in ("", "Guest"):
