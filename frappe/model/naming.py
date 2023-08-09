@@ -286,7 +286,6 @@ def make_autoname(key="", doctype="", doc=""):
 	              * DE./.YY./.MM./.##### will create a series like
 	                DE/09/01/00001 where 09 is the year, 01 is the month and 00001 is the series
 	"""
-	print('key', key)	
 	if key == "hash":
 		return frappe.generate_hash(length=10)
 	elif key == "ulid":

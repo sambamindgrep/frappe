@@ -4,7 +4,7 @@ import datetime
 import json
 
 import frappe
-from frappe import _, _dict, get_module_path
+from frappe import _, _dict
 from frappe.model import (
 	child_table_fields,
 	datetime_fields,
